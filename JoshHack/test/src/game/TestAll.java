@@ -15,6 +15,7 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
+	EffectTest.class,
 	InventoryTest.class,
 	ItemTest.class,
 })
