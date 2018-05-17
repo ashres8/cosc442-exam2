@@ -108,28 +108,6 @@ public class InventoryTest {
 	}
 
 	/**
-	 * Run the Item get(int) method test.
-	 *
-	 * @throws Exception
-	 *
-	 * @generatedBy CodePro at 5/17/18 1:56 PM
-	 */
-	@Test
-	public void testGet_1()
-		throws Exception {
-		Inventory fixture = new Inventory(1);
-		int i = 1;
-
-		Item result = fixture.get(i);
-
-		// add additional test code here
-		// An unexpected exception was thrown in user code while executing this test:
-		//    java.lang.ArrayIndexOutOfBoundsException: 1
-		//       at game.Inventory.get(Inventory.java:25)
-		assertNotNull(result);
-	}
-
-	/**
 	 * Run the Item[] getItems() method test.
 	 *
 	 * @throws Exception
