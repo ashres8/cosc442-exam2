@@ -79,31 +79,39 @@ public class WorldBuilder {
 		Tile[][][] tiles2 = new Tile[width][height][depth];
 		for (int time = 0; time < times; time++) {
 
-			for (int x = 0; x < width; x++) {
-				for (int y = 0; y < height; y++) {
-					for (int z = 0; z < depth; z++) {
-						int floors = 0;
-						int rocks = 0;
-	
-						for (int ox = -1; ox < 2; ox++) {
-							for (int oy = -1; oy < 2; oy++) {
-								if (x + ox < 0 || x + ox >= width || y + oy < 0
-										|| y + oy >= height)
-									continue;
-	
-								if (tiles[x + ox][y + oy][z] == Tile.FLOOR)
-									floors++;
-								else
-									rocks++;
-							}
-						}
-						tiles2[x][y][z] = floors >= rocks ? Tile.FLOOR : Tile.WALL;
-					}
-				}
-			}
+			goingThroughEachTile(tiles2);
 			tiles = tiles2;
 		}
 		return this;
+	}
+
+	private void goingThroughEachTile(Tile[][][] tiles2) {
+		for (int x = 0; x < width; x++) {
+			for (int y = 0; y < height; y++) {
+				for (int z = 0; z < depth; z++) {
+					smoothingTiles(tiles2, x, y, z);
+				}
+			}
+		}
+	}
+
+	private void smoothingTiles(Tile[][][] tiles2, int x, int y, int z) {
+		int floors = 0;
+		int rocks = 0;
+
+		for (int ox = -1; ox < 2; ox++) {
+			for (int oy = -1; oy < 2; oy++) {
+				if (x + ox < 0 || x + ox >= width || y + oy < 0
+						|| y + oy >= height)
+					continue;
+
+				if (tiles[x + ox][y + oy][z] == Tile.FLOOR)
+					floors++;
+				else
+					rocks++;
+			}
+		}
+		tiles2[x][y][z] = floors >= rocks ? Tile.FLOOR : Tile.WALL;
 	}
 	
 	/**
@@ -117,16 +125,20 @@ public class WorldBuilder {
 		for (int z = 0; z < depth; z++){
 			for (int x = 0; x < width; x++){
 				for (int y = 0; y < height; y++){
-					if (tiles[x][y][z] != Tile.WALL && regions[x][y][z] == 0){
-						int size = fillRegion(nextRegion++, x, y, z);
-						
-						if (size < 25)
-							removeRegion(nextRegion - 1, z);
-					}
+					changingRegions(z, x, y);
 				}
 			}
 		}
 		return this;
+	}
+
+	private void changingRegions(int z, int x, int y) {
+		if (tiles[x][y][z] != Tile.WALL && regions[x][y][z] == 0){
+			int size = fillRegion(nextRegion++, x, y, z);
+			
+			if (size < 25)
+				removeRegion(nextRegion - 1, z);
+		}
 	}
 	
 	/**
@@ -164,18 +176,23 @@ public class WorldBuilder {
 		while (!open.isEmpty()){
 			Point p = open.remove(0);
 
-			for (Point neighbor : p.neighbors8()){
-				if (neighbor.x < 0 || neighbor.y < 0 || neighbor.x >= width || neighbor.y >= height)
-					continue;
-				
-				if (regions[neighbor.x][neighbor.y][neighbor.z] > 0
-						|| tiles[neighbor.x][neighbor.y][neighbor.z] == Tile.WALL)
-					continue;
+			size = checkingNeighbors(region, size, open, p);
+		}
+		return size;
+	}
 
-				size++;
-				regions[neighbor.x][neighbor.y][neighbor.z] = region;
-				open.add(neighbor);
-			}
+	private int checkingNeighbors(int region, int size, ArrayList<Point> open, Point p) {
+		for (Point neighbor : p.neighbors8()){
+			if (neighbor.x < 0 || neighbor.y < 0 || neighbor.x >= width || neighbor.y >= height)
+				continue;
+			
+			if (regions[neighbor.x][neighbor.y][neighbor.z] > 0
+					|| tiles[neighbor.x][neighbor.y][neighbor.z] == Tile.WALL)
+				continue;
+
+			size++;
+			regions[neighbor.x][neighbor.y][neighbor.z] = region;
+			open.add(neighbor);
 		}
 		return size;
 	}
